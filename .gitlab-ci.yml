@@ -1,0 +1,108 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - deploy
+
+cache:
+  untracked: true
+
+variables:
+  CONTAINER_RELEASE_IMAGE: registry.dev.sendit.asia/sendit/test-socket
+  DOCKER_DRIVER: overlay
+
+before_script:
+  - export DOCKER_API_VERSION=1.23 && docker login -u $DOCKER_USER -p $DOCKER_PASSWORD registry.dev.sendit.asia
+  - apk update && apk add ca-certificates wget && update-ca-certificates
+
+development-push:
+  stage: build
+  environment: development
+  script:
+    - docker pull $CONTAINER_RELEASE_IMAGE:stable || true
+    - docker build --cache-from $CONTAINER_RELEASE_IMAGE:stable -t $CONTAINER_RELEASE_IMAGE:${CI_COMMIT_SHA:0:7} -f deployment/Dockerfile .
+    - docker push $CONTAINER_RELEASE_IMAGE:${CI_COMMIT_SHA:0:7}
+  tags:
+    - docker
+  only: 
+    - development
+
+development-deploy:
+  image: registry.gitlab.com/sendit-th/docker-base:kube
+  stage: deploy
+  environment: development
+  before_script:
+    - mkdir ~/.kube
+    - echo -n "${OPSTA_PROD_KUBE_CONFIG}" | base64 -d > ~/.kube/config
+    - kubectl config use-context sendit-prod.k8s.local
+    - "helm init --client-only"
+  script:
+    - "git clone https://$OPSTA_SENDIT_GITLAB_USERNAME:$OPSTA_SENDIT_GITLAB_PASSWORD@gitlab.com/sendit-th/sendit-infra-cluster.git /sendit-infra-cluster"
+    - "helm upgrade -i dev-th-test-socket /sendit-infra-cluster/helm-nodejs -f deployment/values-development-th.yaml --namespace=development --set nodejs.image.tag=${CI_COMMIT_SHA:0:7} --wait"
+  tags:
+    - docker
+  only:
+    - development
+
+staging-push:
+  stage: build
+  environment: staging
+  script:
+    - docker pull $CONTAINER_RELEASE_IMAGE:stable || true
+    - docker build --cache-from $CONTAINER_RELEASE_IMAGE:stable -t $CONTAINER_RELEASE_IMAGE:${CI_COMMIT_SHA:0:7} -f deployment/Dockerfile .
+    - docker push $CONTAINER_RELEASE_IMAGE:${CI_COMMIT_SHA:0:7}
+  tags:
+    - docker
+  only: 
+    - master
+
+staging-deploy:
+  image: registry.gitlab.com/sendit-th/docker-base:kube
+  stage: deploy
+  environment: staging
+  before_script:
+    - mkdir ~/.kube
+    - echo -n "${OPSTA_PROD_KUBE_CONFIG}" | base64 -d > ~/.kube/config
+    - kubectl config use-context sendit-prod.k8s.local
+    - "helm init --client-only"
+  script:
+    - "git clone https://$OPSTA_SENDIT_GITLAB_USERNAME:$OPSTA_SENDIT_GITLAB_PASSWORD@gitlab.com/sendit-th/sendit-infra-cluster.git /sendit-infra-cluster"
+    - "helm upgrade -i staging-th-test-socket /sendit-infra-cluster/helm-nodejs -f deployment/values-staging.yaml --namespace=staging --set nodejs.image.tag=${CI_COMMIT_SHA:0:7} --wait"
+  tags:
+    - docker
+  only:
+    - master
+
+production-push:
+  stage: build
+  environment: production
+  script:
+    - docker pull $CONTAINER_RELEASE_IMAGE:stable || true
+    - docker build --cache-from $CONTAINER_RELEASE_IMAGE:stable -t $CONTAINER_RELEASE_IMAGE:${CI_BUILD_TAG} -f deployment/Dockerfile .
+    - docker push $CONTAINER_RELEASE_IMAGE:${CI_BUILD_TAG}
+  tags:
+    - docker
+  only: 
+    - tags@sendit-th/test-socket
+
+production-deploy:
+  image: registry.gitlab.com/sendit-th/docker-base:kube
+  stage: deploy
+  environment: production
+  before_script:
+    - mkdir ~/.kube
+    - echo -n "${OPSTA_PROD_KUBE_CONFIG}" | base64 -d > ~/.kube/config
+    - kubectl config use-context sendit-prod.k8s.local
+    - "helm init --client-only"
+  script:
+    - "git clone https://$OPSTA_SENDIT_GITLAB_USERNAME:$OPSTA_SENDIT_GITLAB_PASSWORD@gitlab.com/sendit-th/sendit-infra-cluster.git /sendit-infra-cluster"
+    - "helm upgrade -i prod-th-test-socket /sendit-infra-cluster/helm-nodejs -f deployment/values-production-th.yaml --namespace=production --set nodejs.image.tag=${CI_BUILD_TAG} --wait"
+  tags:
+    - docker
+  only:
+    - tags@sendit-th/test-socket
+
+

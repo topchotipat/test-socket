@@ -1,0 +1,55 @@
+{
+  "name": "sendit-backend-boilerplate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "engineStrict": true,
+  "engines": {
+    "node": ">=10.1.0"
+  },
+  "scripts": {
+    "start-dev": "DEBUG=koa*,worker,app* nodemon src/index.js --exec babel-node -e js",
+    "start-production": "npm run build && node build/index.js",
+    "clean": "rm -rf build && mkdir build",
+    "build": "npm run clean && babel -d ./build ./src -s",
+    "test-unit": "NODE_ENV=test jest src/ --watchAll --verbose --coverage --runInBand",
+    "test-api": "NODE_ENV=test jest __test__ --watchAll --verbose --coverage --runInBand"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^9.0.0",
+    "babel-plugin-transform-decorators": "^6.24.1",
+    "babel-plugin-transform-decorators-legacy": "^1.3.5",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^3.0.1",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "jest": "^23.5.0",
+    "mongodb-memory-server": "^2.1.0",
+    "nodemon": "^1.18.4",
+    "prettier": "^1.14.2",
+    "prettierrc": "^0.0.0-5",
+    "supertest": "^3.1.0"
+  },
+  "dependencies": {
+    "@koa/cors": "^2.2.2",
+    "@spksoft/koa-decorator": "^1.2.2",
+    "@spksoft/koa-validator-decorator": "^1.0.1",
+    "babel-polyfill": "^6.26.0",
+    "bunyan": "^1.8.12",
+    "dotenv": "^6.0.0",
+    "http-graceful-shutdown": "^2.1.1",
+    "koa": "^2.5.2",
+    "koa-bodyparser": "^4.2.1",
+    "koa-compress": "^3.0.0",
+    "mockgoose": "^7.3.5",
+    "mongoose": "^5.2.13",
+    "uuid": "^3.3.2",
+    "yup": "^0.26.3"
+  }
+}

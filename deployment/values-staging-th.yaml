@@ -1,0 +1,25 @@
+nodejs:
+  replicaCount: 3
+  nameOverride: staging-th-test-socket
+  imagePullSecrets:
+    name: senditregistry
+  image:
+    repository: registry.dev.sendit.asia/sendit/test-socket
+    pullPolicy: Always
+  containerPorts:
+    - 80
+  env:
+    - name: PORT
+      value: 80
+  workingDir: /var/source
+  healthCheck:
+    httpGet:
+      path: /v1/system/health
+      port: 80
+  type: ClusterIP
+  default:
+    ports:
+      - name: staging-th-test-socket-http
+        externalPort: 80
+        internalPort: 80
+        protocol: TCP
