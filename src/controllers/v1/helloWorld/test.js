@@ -133,7 +133,22 @@ export const resp = id => {
       status: 'INTERNAL',
       username: 'maoshuai',
       parcelSetDate: '20180708',
-      vehicle: {},
+      vehicle: {
+        weight: {
+          unit: 'KG',
+          load: 1,
+          total: 1
+        },
+        dimension: {
+          unit: 'CM',
+          height: 1,
+          depth: 1,
+          width: 1
+        },
+        licensePlate: 'X1234',
+        model: '10W',
+        brand: 'Chevrolet'
+      },
       bagDetail: {
         totalDeliveryShop: 7,
         deliverd: 7,
@@ -226,7 +241,22 @@ export const resp = id => {
       status: 'INTERNAL',
       username: 'maoshuai',
       parcelSetDate: '20180708',
-      vehicle: {},
+      vehicle: {
+        weight: {
+          unit: 'KG',
+          load: 1,
+          total: 1
+        },
+        dimension: {
+          unit: 'CM',
+          height: 1,
+          depth: 1,
+          width: 1
+        },
+        licensePlate: 'X1234',
+        model: '10W',
+        brand: 'Chevrolet'
+      },
       bagDetail: {
         totalDeliveryShop: 7,
         deliverd: 0,
